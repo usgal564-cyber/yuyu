@@ -410,7 +410,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
   </div>
 
   <script>
-    // === ОДНЫ ЦЭНХЭР ===
     const canvas = document.getElementById('starfield');
     const ctx = canvas.getContext('2d');
     let stars = [];
@@ -438,20 +437,13 @@ const HTML_CONTENT = `<!DOCTYPE html>
         s.y += s.speed;
         if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
         const dx = s.x + px * s.size, dy = s.y + py * s.size;
-        ctx.beginPath();
-        ctx.arc(dx, dy, s.size, 0, Math.PI * 2);
-        ctx.fillStyle = s.color;
-        ctx.globalAlpha = s.opacity * 0.8;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(dx, dy, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = s.color; ctx.globalAlpha = s.opacity * 0.8; ctx.fill();
         if (s.size > 1.5) {
-          ctx.beginPath();
-          ctx.arc(dx, dy, s.size * 3, 0, Math.PI * 2);
+          ctx.beginPath(); ctx.arc(dx, dy, s.size * 3, 0, Math.PI * 2);
           const g = ctx.createRadialGradient(dx, dy, 0, dx, dy, s.size * 3);
-          g.addColorStop(0, s.color);
-          g.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = g;
-          ctx.globalAlpha = s.opacity * 0.15;
-          ctx.fill();
+          g.addColorStop(0, s.color); g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g; ctx.globalAlpha = s.opacity * 0.15; ctx.fill();
         }
       });
       ctx.globalAlpha = 1;
@@ -459,7 +451,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
     }
     animateStars();
 
-    // === ТОГЛООМЫН ЛОГИК ===
     const socket = io();
     const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'];
     let myId = '', myName = '', myRole = '', roomCode = '', isHost = false;
@@ -470,47 +461,46 @@ const HTML_CONTENT = `<!DOCTYPE html>
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
-    function showToast(msg, type = 'info') {
+    function showToast(msg, type) {
+      type = type || 'info';
       const t = document.createElement('div');
       t.className = 'toast toast-' + type;
       t.textContent = msg;
       document.getElementById('toast-container').appendChild(t);
-      setTimeout(() => t.classList.add('show'), 10);
-      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 300); }, 3000);
     }
 
-    // Лобби товчлуур
-    document.getElementById('btn-show-create').addEventListener('click', () => {
+    document.getElementById('btn-show-create').addEventListener('click', function() {
       document.getElementById('create-panel').classList.toggle('hidden');
       document.getElementById('join-panel').classList.add('hidden');
     });
-    document.getElementById('btn-show-join').addEventListener('click', () => {
+    document.getElementById('btn-show-join').addEventListener('click', function() {
       document.getElementById('join-panel').classList.toggle('hidden');
       document.getElementById('create-panel').classList.add('hidden');
     });
-    document.getElementById('btn-create').addEventListener('click', () => {
-      const n = document.getElementById('create-name').value.trim();
+    document.getElementById('btn-create').addEventListener('click', function() {
+      var n = document.getElementById('create-name').value.trim();
       if (!n) { showToast('Нэрээ оруулна уу', 'error'); return; }
       myName = n;
       socket.emit('createRoom', { playerName: n });
     });
-    document.getElementById('btn-join').addEventListener('click', () => {
-      const n = document.getElementById('join-name').value.trim();
-      const c = document.getElementById('join-code').value.trim();
+    document.getElementById('btn-join').addEventListener('click', function() {
+      var n = document.getElementById('join-name').value.trim();
+      var c = document.getElementById('join-code').value.trim();
       if (!n) { showToast('Нэрээ оруулна уу', 'error'); return; }
       if (!c) { showToast('Room код оруулна уу', 'error'); return; }
       myName = n;
       socket.emit('joinRoom', { roomCode: c, playerName: n });
     });
-    document.getElementById('create-name').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('btn-create').click(); });
-    document.getElementById('join-code').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('btn-join').click(); });
-    document.getElementById('btn-copy-code').addEventListener('click', () => {
-      const code = document.getElementById('room-code').textContent;
-      navigator.clipboard.writeText(code).then(() => showToast('Код хуулагдлаа!', 'success')).catch(() => showToast('Код: ' + code, 'info'));
+    document.getElementById('create-name').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('btn-create').click(); });
+    document.getElementById('join-code').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('btn-join').click(); });
+    document.getElementById('btn-copy-code').addEventListener('click', function() {
+      var code = document.getElementById('room-code').textContent;
+      navigator.clipboard.writeText(code).then(function() { showToast('Код хуулагдлаа!', 'success'); }).catch(function() { showToast('Код: ' + code, 'info'); });
     });
 
-    // SOCKET EVENTS
-    socket.on('roomCreated', data => {
+    socket.on('roomCreated', function(data) {
       myId = socket.id; roomCode = data.roomCode; isHost = true;
       document.getElementById('room-code').textContent = data.roomCode;
       showView('view-waiting');
@@ -519,7 +509,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       updateWaitingRoom(data);
       showToast('Room үүсгэгдлээ!', 'success');
     });
-    socket.on('roomJoined', data => {
+    socket.on('roomJoined', function(data) {
       myId = socket.id; roomCode = data.roomCode; isHost = false;
       document.getElementById('room-code').textContent = data.roomCode;
       showView('view-waiting');
@@ -529,9 +519,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
       updateWaitingRoom(data);
       showToast('Room-д орлоо!', 'success');
     });
-    socket.on('roomError', msg => showToast(msg, 'error'));
-    socket.on('playerUpdate', data => updateWaitingRoom(data));
-    socket.on('hostChanged', data => {
+    socket.on('roomError', function(msg) { showToast(msg, 'error'); });
+    socket.on('playerUpdate', function(data) { updateWaitingRoom(data); });
+    socket.on('hostChanged', function(data) {
       showToast(data.newHostName + ' хост боллоо', 'info');
       if (data.newHostName === myName) {
         isHost = true;
@@ -544,65 +534,65 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
     function updateWaitingRoom(data) {
       document.getElementById('player-count').textContent = data.playerCount;
-      const list = document.getElementById('player-list');
+      var list = document.getElementById('player-list');
       list.innerHTML = '';
-      data.players.forEach((p, i) => {
-        const card = document.createElement('div');
+      data.players.forEach(function(p, i) {
+        var card = document.createElement('div');
         card.className = 'player-card' + (p.id === data.host ? ' is-host' : '');
-        card.innerHTML = '<div class="player-avatar" style="background:' + playerColors[i] + '">' + p.name.charAt(0).toUpperCase() + '</div><div class="flex-1"><span class="font-bold text-sm">' + p.name + (p.id === myId ? ' (та)' : '') + '</span>' + (p.id === data.host ? ' <span class="text-xs ml-2" style="color:var(--accent-yellow)"><i class="fas fa-crown"></i> Хост</span>' : '') + '</div>';
+        card.innerHTML = '<div class="player-avatar" style="background:' + playerColors[i] + '">' + (i + 1) + '</div><div class="flex-1"><span class="font-bold text-sm">Тоглогч ' + (i + 1) + '</span><span class="text-xs ml-2" style="color:var(--text-muted)">(' + p.name + ')</span>' + (p.id === data.host ? ' <span class="text-xs ml-1" style="color:var(--accent-yellow)"><i class="fas fa-crown"></i></span>' : '') + '</div>';
         list.appendChild(card);
       });
       if (isHost) {
-        const btn = document.getElementById('btn-start-game');
+        var btn = document.getElementById('btn-start-game');
         btn.disabled = data.playerCount < 3;
         document.getElementById('start-info').textContent = data.playerCount < 3 ? 'Давуу 3 хүн хэрэгтэй (' + data.playerCount + '/3)' : data.playerCount + ' хүн бэлэн!';
       }
     }
 
     function renderCategoryGrid() {
-      const grid = document.getElementById('category-grid');
+      var grid = document.getElementById('category-grid');
       grid.innerHTML = '';
-      categories.forEach(cat => {
-        const card = document.createElement('div');
+      categories.forEach(function(cat) {
+        var card = document.createElement('div');
         card.className = 'category-card' + (cat === selectedCategory ? ' selected' : '');
         card.textContent = cat;
-        card.addEventListener('click', () => {
+        card.addEventListener('click', function() {
           selectedCategory = cat;
-          grid.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+          grid.querySelectorAll('.category-card').forEach(function(c) { c.classList.remove('selected'); });
           card.classList.add('selected');
         });
         grid.appendChild(card);
       });
     }
 
-    document.getElementById('btn-start-game').addEventListener('click', () => {
+    document.getElementById('btn-start-game').addEventListener('click', function() {
       if (!selectedCategory) { showToast('Ангилал сонгоно уу', 'error'); return; }
-      socket.emit('startGame', { roomCode, category: selectedCategory });
+      socket.emit('startGame', { roomCode: roomCode, category: selectedCategory });
     });
 
-    socket.on('gameStarted', data => {
+    socket.on('gameStarted', function(data) {
       myRole = data.role;
       showView('view-role');
-      const card = document.getElementById('role-card-content');
+      var card = document.getElementById('role-card-content');
       if (data.role === 'impostor') {
         card.innerHTML = '<div class="role-icon impostor"><i class="fas fa-user-secret"></i></div><h2 class="text-3xl font-black mb-3" style="color:var(--accent-red); font-family:Orbitron,sans-serif;">ХАЛДАГЧ</h2><p class="text-base mb-2" style="color:var(--text-secondary);">Та халдагч боллоо!</p><p class="text-sm" style="color:var(--text-muted);">Сэдвийг мэдэхгүй байна. Мэдэх мэт жүжиглээрэй.</p><div class="mt-6 p-4 rounded-xl" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);"><p class="text-xs" style="color:var(--text-muted);">Сэдэв:</p><p class="text-xl font-bold" style="color:var(--accent-red);">???</p></div><p class="text-xs mt-6" style="color:var(--text-muted);">Хост ярилцлагыг эхлүүлтэл хүлээнэ үү...</p>';
       } else {
         card.innerHTML = '<div class="role-icon citizen"><i class="fas fa-user-shield"></i></div><h2 class="text-3xl font-black mb-3" style="color:var(--accent-cyan); font-family:Orbitron,sans-serif;">ИРГЭН</h2><p class="text-base mb-2" style="color:var(--text-secondary);">Та энгийн иргэн боллоо!</p><p class="text-sm" style="color:var(--text-muted);">Халдагч ярилцлагын үед илэрч магадгүй.</p><div class="mt-6 p-4 rounded-xl" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3);"><p class="text-xs" style="color:var(--text-muted);">Сэдэв:</p><p class="text-xl font-bold" style="color:var(--accent-cyan);">' + data.topic + '</p></div><p class="text-xs mt-6" style="color:var(--text-muted);">Хост ярилцлагыг эхлүүлтэл хүлээнэ үү...</p>';
       }
       if (isHost) {
-        const btn = document.createElement('button');
+        var btn = document.createElement('button');
         btn.className = 'btn-primary w-full mt-6';
         btn.innerHTML = '<i class="fas fa-comments mr-2"></i> Ярилцлагыг эхлүүлэх';
-        btn.addEventListener('click', () => socket.emit('startDiscussion', { roomCode }));
+        btn.addEventListener('click', function() { socket.emit('startDiscussion', { roomCode: roomCode }); });
         card.appendChild(btn);
       }
     });
 
-    socket.on('discussionStarted', data => {
+    socket.on('discussionStarted', function(data) {
       showView('view-discussion');
       document.getElementById('round-badge').textContent = data.round + '-р үе';
       document.getElementById('chat-messages').innerHTML = '';
-      const topicEl = document.getElementById('discussion-topic');
+      var topicEl = document.getElementById('discussion-topic');
       topicEl.style.display = '';
       if (myRole === 'citizen') {
         topicEl.textContent = 'Сэдэв: ' + data.topic;
@@ -611,26 +601,22 @@ const HTML_CONTENT = `<!DOCTYPE html>
         topicEl.textContent = 'Сэдэв: ???';
         topicEl.style.color = 'var(--accent-red)';
       }
-      const badge = document.getElementById('my-role-badge');
+      var badge = document.getElementById('my-role-badge');
       if (myRole === 'impostor') {
-        badge.textContent = 'ХАЛДАГЧ';
-        badge.style.background = 'rgba(239,68,68,0.2)';
-        badge.style.color = 'var(--accent-red)';
+        badge.textContent = 'ХАЛДАГЧ'; badge.style.background = 'rgba(239,68,68,0.2)'; badge.style.color = 'var(--accent-red)';
       } else {
-        badge.textContent = 'ИРГЭН';
-        badge.style.background = 'rgba(6,182,212,0.2)';
-        badge.style.color = 'var(--accent-cyan)';
+        badge.textContent = 'ИРГЭН'; badge.style.background = 'rgba(6,182,212,0.2)'; badge.style.color = 'var(--accent-cyan)';
       }
       document.getElementById('host-controls').classList[isHost ? 'remove' : 'add']('hidden');
       addSystemMessage('Ярилцлага эхэллээ!');
       if (myRole === 'citizen') addSystemMessage('Сэдвийг шууд хэлэхгүй, намуухан сануулаад ярилцана уу.');
     });
 
-    socket.on('roundStarted', data => {
+    socket.on('roundStarted', function(data) {
       showView('view-discussion');
       document.getElementById('round-badge').textContent = data.round + '-р үе';
       document.getElementById('chat-messages').innerHTML = '';
-      const topicEl = document.getElementById('discussion-topic');
+      var topicEl = document.getElementById('discussion-topic');
       topicEl.style.display = '';
       if (data.role === 'citizen') {
         topicEl.textContent = 'Сэдэв: ' + data.topic;
@@ -643,58 +629,58 @@ const HTML_CONTENT = `<!DOCTYPE html>
       addSystemMessage(data.round + '-р үе эхэллээ! Шинэ сэдвээр ярилцана.');
     });
 
-    socket.on('chatMessage', data => {
+    socket.on('chatMessage', function(data) {
       addChatMessage(data.sender, data.message, data.color, data.time, data.senderId === myId);
     });
 
     function addChatMessage(sender, message, color, time, isSelf) {
-      const chat = document.getElementById('chat-messages');
-      const bubble = document.createElement('div');
+      var chat = document.getElementById('chat-messages');
+      var bubble = document.createElement('div');
       bubble.className = 'chat-bubble ' + (isSelf ? 'self' : 'other');
       bubble.innerHTML = '<div class="chat-sender" style="color:' + color + '">' + sender + '</div><div>' + message + '</div><div class="chat-time">' + time + '</div>';
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
     }
     function addSystemMessage(text) {
-      const chat = document.getElementById('chat-messages');
-      const msg = document.createElement('div');
+      var chat = document.getElementById('chat-messages');
+      var msg = document.createElement('div');
       msg.style.cssText = 'text-align:center; font-size:11px; color:var(--text-muted); padding:8px; font-style:italic;';
       msg.textContent = text;
       chat.appendChild(msg);
     }
 
     document.getElementById('btn-send').addEventListener('click', sendChat);
-    document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
+    document.getElementById('chat-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChat(); });
     function sendChat() {
-      const input = document.getElementById('chat-input');
-      const msg = input.value.trim();
+      var input = document.getElementById('chat-input');
+      var msg = input.value.trim();
       if (!msg) return;
-      socket.emit('chatMessage', { roomCode, message: msg });
+      socket.emit('chatMessage', { roomCode: roomCode, message: msg });
       input.value = '';
     }
 
-    document.getElementById('btn-start-voting').addEventListener('click', () => {
-      socket.emit('startVoting', { roomCode });
+    document.getElementById('btn-start-voting').addEventListener('click', function() {
+      socket.emit('startVoting', { roomCode: roomCode });
     });
 
-    socket.on('votingStarted', data => {
+    socket.on('votingStarted', function(data) {
       showView('view-voting');
       hasVoted = false;
-      const grid = document.getElementById('vote-players');
+      var grid = document.getElementById('vote-players');
       grid.innerHTML = '';
-      data.players.forEach(p => {
+      data.players.forEach(function(p) {
         if (p.id === myId) return;
-        const card = document.createElement('div');
+        var card = document.createElement('div');
         card.className = 'vote-card';
-        card.innerHTML = '<div class="player-avatar" style="background:' + p.color + '">' + p.name.charAt(0).toUpperCase() + '</div><span class="font-bold text-sm">' + p.name + '</span>';
-        card.addEventListener('click', () => {
+        card.innerHTML = '<div class="player-avatar" style="background:' + p.color + '">' + p.name.replace('Тоглогч ', '') + '</div><span class="font-bold text-sm">' + p.name + '</span>';
+        card.addEventListener('click', function() {
           if (hasVoted) return;
           hasVoted = true;
           card.classList.add('voted');
-          grid.querySelectorAll('.vote-card:not(.voted)').forEach(c => c.classList.add('disabled'));
+          grid.querySelectorAll('.vote-card:not(.voted)').forEach(function(c) { c.classList.add('disabled'); });
           document.getElementById('btn-skip-vote').disabled = true;
           document.getElementById('btn-skip-vote').style.opacity = '0.4';
-          socket.emit('castVote', { roomCode, targetId: p.id });
+          socket.emit('castVote', { roomCode: roomCode, targetId: p.id });
           showToast('Санал өглөө!', 'info');
         });
         grid.appendChild(card);
@@ -702,26 +688,26 @@ const HTML_CONTENT = `<!DOCTYPE html>
       updateVoteProgress(0, data.players.length);
     });
 
-    socket.on('voteUpdate', data => updateVoteProgress(data.votedCount, data.totalPlayers));
+    socket.on('voteUpdate', function(data) { updateVoteProgress(data.votedCount, data.totalPlayers); });
     function updateVoteProgress(voted, total) {
       document.getElementById('vote-progress-bar').style.width = (total > 0 ? (voted / total) * 100 : 0) + '%';
       document.getElementById('vote-progress-text').textContent = voted + '/' + total;
     }
 
-    document.getElementById('btn-skip-vote').addEventListener('click', () => {
+    document.getElementById('btn-skip-vote').addEventListener('click', function() {
       if (hasVoted) return;
       hasVoted = true;
-      socket.emit('castVote', { roomCode, targetId: 'skip' });
-      document.querySelectorAll('.vote-card').forEach(c => c.classList.add('disabled'));
+      socket.emit('castVote', { roomCode: roomCode, targetId: 'skip' });
+      document.querySelectorAll('.vote-card').forEach(function(c) { c.classList.add('disabled'); });
       document.getElementById('btn-skip-vote').disabled = true;
       document.getElementById('btn-skip-vote').style.opacity = '0.4';
       showToast('Саналаас татгалзлаа', 'info');
     });
 
-    socket.on('voteResult', data => {
+    socket.on('voteResult', function(data) {
       showView('view-result');
-      const c = document.getElementById('result-content');
-      let h = '<div class="text-center">';
+      var c = document.getElementById('result-content');
+      var h = '<div class="text-center">';
       if (data.tie) {
         h += '<div class="result-eliminated tie"><i class="fas fa-balance-scale text-3xl mb-2" style="color:var(--accent-yellow)"></i><h3 class="text-xl font-bold" style="color:var(--accent-yellow)">Тэнцэв!</h3><p class="text-sm mt-1" style="color:var(--text-secondary)">Ихэнх санал тэнцэж, хэн ч хасагдаагүй</p></div>';
       } else if (data.eliminated && data.isImpostor) {
@@ -730,10 +716,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
         h += '<div class="result-eliminated not-found"><i class="fas fa-times-circle text-4xl mb-2" style="color:var(--accent-red)"></i><h3 class="text-xl font-bold" style="color:var(--accent-red)">БУРУУ ХАССАН!</h3><p class="text-lg mt-2">' + data.eliminated.name + ' халдагч биш байсан!</p><p class="text-sm mt-1" style="color:var(--text-muted)">Жинхэнэ халдагч: ' + data.impostorName + '</p></div>';
       }
       h += '<div class="mt-5 text-left"><h4 class="text-sm font-bold mb-3" style="color:var(--text-muted)">Саналын дүн:</h4>';
-      const mx = data.voteResults.length > 0 ? data.voteResults[0].count : 1;
-      data.voteResults.forEach(v => {
-        const pct = (v.count / mx) * 100;
-        const bc = v.isSkip ? 'var(--accent-yellow)' : (v.color || 'var(--text-muted)');
+      var mx = data.voteResults.length > 0 ? data.voteResults[0].count : 1;
+      data.voteResults.forEach(function(v) {
+        var pct = (v.count / mx) * 100;
+        var bc = v.isSkip ? 'var(--accent-yellow)' : (v.color || 'var(--text-muted)');
         h += '<div class="mb-2"><div class="flex justify-between text-sm"><span class="font-bold" style="color:' + bc + '">' + v.name + '</span><span style="color:var(--text-muted)">' + v.count + ' санал</span></div><div class="vote-bar"><div class="vote-bar-fill" style="width:' + pct + '%; background:' + bc + ';"></div></div></div>';
       });
       h += '</div><div class="mt-6 space-y-3">';
@@ -746,16 +732,16 @@ const HTML_CONTENT = `<!DOCTYPE html>
       }
       h += '</div></div>';
       c.innerHTML = h;
-      const nrb = document.getElementById('btn-new-round');
-      if (nrb) nrb.addEventListener('click', () => socket.emit('newRound', { roomCode, category: selectedCategory }));
-      const eb = document.getElementById('btn-end-game');
-      if (eb) eb.addEventListener('click', () => socket.emit('endGame', { roomCode }));
+      var nrb = document.getElementById('btn-new-round');
+      if (nrb) nrb.addEventListener('click', function() { socket.emit('newRound', { roomCode: roomCode, category: selectedCategory }); });
+      var eb = document.getElementById('btn-end-game');
+      if (eb) eb.addEventListener('click', function() { socket.emit('endGame', { roomCode: roomCode }); });
     });
 
-    socket.on('gameEnded', data => {
+    socket.on('gameEnded', function(data) {
       showView('view-result');
-      const c = document.getElementById('result-content');
-      let h = '<div class="text-center">';
+      var c = document.getElementById('result-content');
+      var h = '<div class="text-center">';
       if (data.aborted) {
         h += '<div class="result-eliminated tie"><i class="fas fa-exclamation-triangle text-4xl mb-2" style="color:var(--accent-yellow)"></i><h3 class="text-xl font-bold" style="color:var(--accent-yellow)">ТОГЛООМ ЗОГСОЛТОО</h3><p class="text-sm mt-1" style="color:var(--text-secondary)">Тоглогч хангалтгүй болсон</p></div>';
       } else if (data.impostorFound) {
@@ -765,7 +751,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       }
       h += '<div class="mt-6"><button id="btn-back-lobby" class="btn-primary w-full"><i class="fas fa-home mr-2"></i> Лобби руу буцах</button></div></div>';
       c.innerHTML = h;
-      document.getElementById('btn-back-lobby').addEventListener('click', () => {
+      document.getElementById('btn-back-lobby').addEventListener('click', function() {
         showView('view-lobby');
         document.getElementById('create-name').value = '';
         document.getElementById('join-name').value = '';
@@ -779,9 +765,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
 </html>`;
 
 // ============================================
-// EXPRESS РОУТ - HTML ШУУД СЕРВЕРЛЭХ
+// EXPRESS РОУТ
 // ============================================
-app.get('/', (req, res) => {
+app.get('/', function(req, res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(HTML_CONTENT);
 });
@@ -802,6 +788,8 @@ const topics = {
   "Кино": ["Марвел кино", "Аниме", "Хоррор кино", "Инээдмийн кино", "Япон кино", "Уран зөгнөлт", "Гэр бүлийн кино"]
 };
 
+const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'];
+
 function generateRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
@@ -814,20 +802,34 @@ function getRandomTopic(category) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+// Тоглогчийн дугаарыг нэр болгох
+function getGameName(index) {
+  return 'Тоглогч ' + (index + 1);
+}
+
 function getRoomState(room) {
   return {
-    players: room.players.map(p => ({ id: p.id, name: p.name })),
+    players: room.players.map(function(p) { return { id: p.id, name: p.name }; }),
     phase: room.phase, host: room.host,
     round: room.round, playerCount: room.players.length
   };
 }
 
-const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'];
+// Fisher-Yates shuffle - тоглогчдыг санамсаргүй эрэмбэлэх
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
 
-io.on('connection', (socket) => {
+io.on('connection', function(socket) {
   console.log('Холбогдсон:', socket.id);
 
-  socket.on('createRoom', ({ playerName }) => {
+  // === ROOM ҮҮСГЭХ ===
+  socket.on('createRoom', function({ playerName }) {
     if (!playerName || playerName.trim().length < 1) {
       socket.emit('roomError', 'Нэрээ оруулна уу');
       return;
@@ -840,32 +842,43 @@ io.on('connection', (socket) => {
       round: 0, impostorFound: false
     };
     socket.join(roomCode);
-    socket.emit('roomCreated', { roomCode, ...getRoomState(rooms[roomCode]), isHost: true });
+    socket.emit('roomCreated', { roomCode: roomCode, ...getRoomState(rooms[roomCode]), isHost: true });
   });
 
-  socket.on('joinRoom', ({ roomCode, playerName }) => {
+  // === ROOM-Д ОРОХ ===
+  socket.on('joinRoom', function({ roomCode, playerName }) {
     const code = roomCode.toUpperCase().trim();
     const room = rooms[code];
     if (!playerName || playerName.trim().length < 1) { socket.emit('roomError', 'Нэрээ оруулна уу'); return; }
     if (!room) { socket.emit('roomError', 'Тийм кодтой room олдсонгүй'); return; }
     if (room.phase !== 'waiting') { socket.emit('roomError', 'Тоглоом аль хэдийн эхэлсэн байна'); return; }
     if (room.players.length >= 5) { socket.emit('roomError', 'Room дүүрсэн (хамгийн ихдээ 5 хүн)'); return; }
-    if (room.players.some(p => p.name === playerName.trim())) { socket.emit('roomError', 'Ийм нэртэй хүн байна'); return; }
+    if (room.players.some(function(p) { return p.name === playerName.trim(); })) { socket.emit('roomError', 'Ийм нэртэй хүн байна'); return; }
     room.players.push({ id: socket.id, name: playerName.trim(), role: null, voted: false, votedFor: null });
     socket.join(code);
     socket.emit('roomJoined', { roomCode: code, ...getRoomState(room), isHost: false });
     io.to(code).emit('playerUpdate', getRoomState(room));
   });
 
-  socket.on('startGame', ({ roomCode, category }) => {
+  // === ТОГЛООМ ЭХЛҮҮЛЭХ ===
+  socket.on('startGame', function({ roomCode, category }) {
     const room = rooms[roomCode];
     if (!room || room.host !== socket.id) return;
     if (room.players.length < 3) { socket.emit('roomError', 'Хамгийн багадаа 3 хүн шаардлагатай'); return; }
+
     const topic = getRandomTopic(category);
+
+    // ★★★ ЧУХАЛ: Тоглогчдыг санамсаргүй эрэмбэлэх ★★★
+    room.players = shuffleArray(room.players);
+
+    // ★★★ Санамсаргүй нэг халдагч сонгох (host биш ч болно) ★★★
     const impostorIdx = Math.floor(Math.random() * room.players.length);
-    room.players.forEach((p, i) => {
-      p.role = i === impostorIdx ? 'impostor' : 'citizen';
-      p.voted = false; p.votedFor = null;
+    console.log('Room ' + roomCode + ' - Халдагч: Тоглогч ' + (impostorIdx + 1) + ' (' + room.players[impostorIdx].name + ')');
+
+    room.players.forEach(function(p, i) {
+      p.role = (i === impostorIdx) ? 'impostor' : 'citizen';
+      p.voted = false;
+      p.votedFor = null;
     });
     room.impostor = room.players[impostorIdx].id;
     room.topic = topic;
@@ -873,98 +886,121 @@ io.on('connection', (socket) => {
     room.phase = 'roleReveal';
     room.round = 1;
     room.impostorFound = false;
-    room.players.forEach(p => {
+
+    // Тоглогч бүрт role + "Тоглогч X" нэрээр илгээх
+    room.players.forEach(function(p) {
       io.to(p.id).emit('gameStarted', {
         role: p.role,
-        topic: p.role === 'citizen' ? topic : null,
-        category,
+        topic: (p.role === 'citizen') ? topic : null,
+        category: category,
         playerCount: room.players.length,
-        players: room.players.map((pl, idx) => ({ id: pl.id, name: pl.name, color: playerColors[idx] }))
+        players: room.players.map(function(pl, idx) {
+          return { id: pl.id, name: getGameName(idx), color: playerColors[idx] };
+        })
       });
     });
   });
 
-  socket.on('startDiscussion', ({ roomCode }) => {
+  // === ЯРИЛЦЛАГА ЭХЛҮҮЛЭХ ===
+  socket.on('startDiscussion', function({ roomCode }) {
     const room = rooms[roomCode];
     if (!room || room.host !== socket.id) return;
     room.phase = 'discussion';
     io.to(roomCode).emit('discussionStarted', { topic: room.topic, category: room.topicCategory, round: room.round });
   });
 
-  socket.on('chatMessage', ({ roomCode, message }) => {
+  // === ЧАТ МЕССЕЖ - "Тоглогч X" нэрээр явуулах ===
+  socket.on('chatMessage', function({ roomCode, message }) {
     const room = rooms[roomCode];
     if (!room || room.phase !== 'discussion') return;
-    const player = room.players.find(p => p.id === socket.id);
+    const player = room.players.find(function(p) { return p.id === socket.id; });
     if (!player) return;
     const filtered = message.replace(/<[^>]*>/g, '').substring(0, 200);
     if (!filtered.trim()) return;
-    const playerIdx = room.players.findIndex(p => p.id === socket.id);
+    const playerIdx = room.players.findIndex(function(p) { return p.id === socket.id; });
     io.to(roomCode).emit('chatMessage', {
-      sender: player.name, senderId: socket.id, message: filtered,
+      sender: getGameName(playerIdx),
+      senderId: socket.id,
+      message: filtered,
       color: playerColors[playerIdx] || '#94a3b8',
       time: new Date().toLocaleTimeString('mn-MN', { hour: '2-digit', minute: '2-digit' })
     });
   });
 
-  socket.on('startVoting', ({ roomCode }) => {
+  // === САНАЛ ХУРААЛТ ЭХЛҮҮЛЭХ - "Тоглогч X" нэрээр ===
+  socket.on('startVoting', function({ roomCode }) {
     const room = rooms[roomCode];
     if (!room || room.host !== socket.id) return;
     room.phase = 'voting';
-    room.players.forEach(p => { p.voted = false; p.votedFor = null; });
+    room.players.forEach(function(p) { p.voted = false; p.votedFor = null; });
     io.to(roomCode).emit('votingStarted', {
-      players: room.players.map((p, idx) => ({ id: p.id, name: p.name, color: playerColors[idx] }))
+      players: room.players.map(function(p, idx) {
+        return { id: p.id, name: getGameName(idx), color: playerColors[idx] };
+      })
     });
   });
 
-  socket.on('castVote', ({ roomCode, targetId }) => {
+  // === САНАЛ ӨГӨХ ===
+  socket.on('castVote', function({ roomCode, targetId }) {
     const room = rooms[roomCode];
     if (!room || room.phase !== 'voting') return;
-    const voter = room.players.find(p => p.id === socket.id);
+    const voter = room.players.find(function(p) { return p.id === socket.id; });
     if (!voter || voter.voted) return;
     if (targetId !== 'skip' && targetId === socket.id) return;
     voter.voted = true;
     voter.votedFor = targetId;
     io.to(roomCode).emit('voteUpdate', {
-      votedCount: room.players.filter(p => p.voted).length,
+      votedCount: room.players.filter(function(p) { return p.voted; }).length,
       totalPlayers: room.players.length
     });
-    if (room.players.every(p => p.voted)) processVotes(roomCode);
+    if (room.players.every(function(p) { return p.voted; })) processVotes(roomCode);
   });
 
+  // Саналыг боловсруулах - "Тоглогч X" нэрээр
   function processVotes(roomCode) {
     const room = rooms[roomCode];
     if (!room) return;
+
     const voteCount = {};
-    room.players.forEach(p => {
+    room.players.forEach(function(p) {
       if (p.votedFor) voteCount[p.votedFor] = (voteCount[p.votedFor] || 0) + 1;
     });
+
     let maxVotes = 0, eliminatedId = null, tie = false;
-    for (const [id, count] of Object.entries(voteCount)) {
+    for (const id in voteCount) {
+      const count = voteCount[id];
       if (count > maxVotes) { maxVotes = count; eliminatedId = id; tie = false; }
-      else if (count === maxVotes) tie = true;
+      else if (count === maxVotes) { tie = true; }
     }
     if (eliminatedId === 'skip') eliminatedId = null;
+
     const isImpostor = !tie && eliminatedId === room.impostor;
-    const eliminatedPlayer = (!tie && eliminatedId) ? room.players.find(p => p.id === eliminatedId) : null;
+    const eliminatedPlayer = (!tie && eliminatedId) ? room.players.find(function(p) { return p.id === eliminatedId; }) : null;
     if (isImpostor) room.impostorFound = true;
     room.phase = 'result';
+
+    // "Тоглогч X" нэрээр саналын дүн харуулах
     const voteResults = Object.entries(voteCount)
-      .map(([id, count]) => {
-        if (id === 'skip') return { name: 'Алгасах', count, isSkip: true };
-        const p = room.players.find(pl => pl.id === id);
-        const idx = room.players.findIndex(pl => pl.id === id);
-        return { name: p ? p.name : '?', count, color: playerColors[idx], isSkip: false };
+      .map(function(entry) {
+        const id = entry[0], count = entry[1];
+        if (id === 'skip') return { name: 'Алгасах', count: count, isSkip: true };
+        const idx = room.players.findIndex(function(pl) { return pl.id === id; });
+        return { name: getGameName(idx), count: count, color: playerColors[idx], isSkip: false };
       })
-      .sort((a, b) => b.count - a.count);
+      .sort(function(a, b) { return b.count - a.count; });
+
     io.to(roomCode).emit('voteResult', {
-      eliminated: eliminatedPlayer ? { name: eliminatedPlayer.name } : null,
-      isImpostor, tie, voteResults,
-      impostorName: room.players.find(p => p.id === room.impostor)?.name,
+      eliminated: eliminatedPlayer ? { name: getGameName(room.players.findIndex(function(p) { return p.id === eliminatedId; })) } : null,
+      isImpostor: isImpostor,
+      tie: tie,
+      voteResults: voteResults,
+      impostorName: getGameName(room.players.findIndex(function(p) { return p.id === room.impostor; })),
       impostorFound: room.impostorFound
     });
   }
 
-  socket.on('newRound', ({ roomCode, category }) => {
+  // === ШИНЭ ҮЕ ===
+  socket.on('newRound', function({ roomCode, category }) {
     const room = rooms[roomCode];
     if (!room || room.host !== socket.id) return;
     if (room.impostorFound) return;
@@ -973,47 +1009,55 @@ io.on('connection', (socket) => {
     room.topicCategory = category;
     room.phase = 'discussion';
     room.round++;
-    room.players.forEach(p => { p.voted = false; p.votedFor = null; });
-    room.players.forEach(p => {
+    room.players.forEach(function(p) { p.voted = false; p.votedFor = null; });
+    room.players.forEach(function(p) {
       io.to(p.id).emit('roundStarted', {
         round: room.round,
-        topic: p.role === 'citizen' ? topic : null,
-        category, role: p.role
+        topic: (p.role === 'citizen') ? topic : null,
+        category: category,
+        role: p.role
       });
     });
   });
 
-  socket.on('endGame', ({ roomCode }) => {
+  // === ТОГЛООМ ДУУСГАХ ===
+  socket.on('endGame', function({ roomCode }) {
     const room = rooms[roomCode];
     if (!room || room.host !== socket.id) return;
-    const impostorName = room.players.find(p => p.id === room.impostor)?.name;
+    const impIdx = room.players.findIndex(function(p) { return p.id === room.impostor; });
     io.to(roomCode).emit('gameEnded', {
-      impostorName, impostorFound: room.impostorFound, rounds: room.round
+      impostorName: getGameName(impIdx),
+      impostorFound: room.impostorFound,
+      rounds: room.round
     });
     room.phase = 'waiting';
-    room.players.forEach(p => { p.role = null; p.voted = false; p.votedFor = null; });
+    room.players.forEach(function(p) { p.role = null; p.voted = false; p.votedFor = null; });
     room.impostor = null; room.topic = null; room.round = 0; room.impostorFound = false;
     io.to(roomCode).emit('playerUpdate', getRoomState(room));
   });
 
-  socket.on('disconnect', () => {
-    for (const [code, room] of Object.entries(rooms)) {
-      const idx = room.players.findIndex(p => p.id === socket.id);
+  // === ХОЛБОГДОЛ ДУУСАХ ===
+  socket.on('disconnect', function() {
+    for (const code in rooms) {
+      const room = rooms[code];
+      const idx = room.players.findIndex(function(p) { return p.id === socket.id; });
       if (idx !== -1) {
         room.players.splice(idx, 1);
-        if (room.players.length === 0) { delete rooms[code]; }
-        else {
+        if (room.players.length === 0) {
+          delete rooms[code];
+        } else {
           if (room.host === socket.id) {
             room.host = room.players[0].id;
             io.to(code).emit('hostChanged', { newHostName: room.players[0].name });
           }
           if (room.phase !== 'waiting' && room.players.length < 3) {
+            const impIdx = room.players.findIndex(function(p) { return p.id === room.impostor; });
             io.to(code).emit('gameEnded', {
-              impostorName: room.players.find(p => p.id === room.impostor)?.name || '?',
+              impostorName: impIdx >= 0 ? getGameName(impIdx) : '?',
               impostorFound: false, rounds: room.round, aborted: true
             });
             room.phase = 'waiting';
-            room.players.forEach(p => { p.role = null; p.voted = false; p.votedFor = null; });
+            room.players.forEach(function(p) { p.role = null; p.voted = false; p.votedFor = null; });
             room.impostor = null; room.topic = null; room.round = 0; room.impostorFound = false;
           }
           io.to(code).emit('playerUpdate', getRoomState(room));
@@ -1025,6 +1069,6 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, function() {
   console.log('Сервер ажиллаж байна: порт ' + PORT);
 });
